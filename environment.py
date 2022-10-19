@@ -28,6 +28,9 @@ class Event:
             except StopIteration:
                 continue
 
+    def getTime(self):
+        return self.trigger_time
+
     def __lt__(self, other):
         return self.trigger_time < other.trigger_time
 
@@ -38,14 +41,14 @@ class Environment:
                  st_time=0,
                  en_time=100,
                  factor=1,
-                 real_time=False,
+                 is_real_time=False,
                  force=False):
         self.start_time = st_time
         self.end_time = en_time
         self.factor = factor
         self._queue = []
         self._time = self.start_time
-        self.real_time = real_time
+        self.is_real_time = is_real_time
         self.force = force
 
     def run(self):
@@ -53,14 +56,14 @@ class Environment:
             try:
                 self.step()
             except EmptySchedule:
-                print("finished")
+                # print("finished")
                 return
 
     def step(self):
         # wait till enough time passes in the real world, if real time
         self.wait()
         while self.force or (len(self._queue) > 0
-                             and self._queue[0].trigger_time <= self._time):
+                             and self.next_event_time() <= self._time):
             curr_event = heappop(self._queue)
             try:
                 curr_event.process(self._time)
@@ -69,7 +72,7 @@ class Environment:
 
     def wait(self):
         w_en_time = self.next_event_time()
-        if (self.real_time):
+        if (self.is_real_time):
             w_st_time = self._time
             real_st_time = time.perf_counter()
             curr_time = time.perf_counter()
@@ -85,7 +88,7 @@ class Environment:
         if (len(self._queue) == 0):
             raise EmptySchedule()
         else:
-            return self._queue[0].trigger_time
+            return self._queue[0].getTime()
 
     def add_event(self, event):
         heappush(self._queue, event)
@@ -95,7 +98,7 @@ class Environment:
 
 
 if __name__ == "__main__":
-    env = Environment(factor=0.5, real_time=True)
+    env = Environment(factor=0.5, is_real_time=True)
     for i in range(0, 50):
         env.add_event(Event(random.uniform(0, 20)))
 

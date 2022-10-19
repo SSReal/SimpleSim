@@ -1,14 +1,18 @@
 from environment import Environment, Event
 import random
 
+class ProcessCreationEvent(Event):
+    def __init__(self, env: Environment, proc, req_time = None):
+        if(req_time is None):
+            super().__init__(env.curr_time(), [proc.step])
+        else:
+            super().__init__(req_time, [proc.step])
+
 class Process:
     def __init__(self, env:Environment, req_time=None):
         self._env = env
         self._generator = self.run()
-        if(req_time is None):
-            self._env.add_event(Event(self._env.curr_time(), callbacks=[self.step]))
-        else:
-            self._env.add_event(Event(req_time, [self.step]))
+        self._env.add_event(ProcessCreationEvent(self._env, self, req_time))
     
     def run(self):
         raise NotImplementedError(self)

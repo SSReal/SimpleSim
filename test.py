@@ -82,7 +82,7 @@ class Passenger(process.Process):
         print("\n----------------\n")
 
 
-env = environment.Environment(0, 100, real_time=False)
+env = environment.Environment(0, 100, is_real_time=False)
 guard = resource.Resource(env, 4)
 check_in_agent = resource.Resource(env, 5)
 boarding_agent = resource.Resource(env, 10)

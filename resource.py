@@ -2,13 +2,20 @@ from environment import Environment, Event
 from process import Process
 import random
 
+class ResourceCreationEvent(Event):
+    def __init__(self, env:Environment, res):
+        super().__init__(env.curr_time(), [res.step])
+    
+class ResourceUpdateEvent(Event):
+    def __init__(self, env:Environment, res):
+        super().__init__(env.curr_time(), [res.step])
 class Resource:
     def __init__(self, env: Environment, capacity: int):
         self._env = env
         self._queue = []
         self.available = capacity
         self._generator = self.run()
-        self._env.add_event(Event(self._env.curr_time(), callbacks=[self.step]))
+        self._env.add_event(ResourceCreationEvent(self._env, self))
     
     def step(self):
         return next(self._generator)
@@ -29,11 +36,11 @@ class Resource:
 
     def request(self, usr):
         self._queue.append(usr)
-        self._env.add_event(Event(self._env.curr_time(), [self.step]))
+        self._env.add_event(ResourceUpdateEvent(self._env, self))
 
     def release(self):
         self.available += 1
-        self._env.add_event(Event(self._env.curr_time(), [self.step]))
+        self._env.add_event(ResourceUpdateEvent(self._env, self))
     
 if __name__ == "__main__":
     class TestProcess(Process):
